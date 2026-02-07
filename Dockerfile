@@ -2,7 +2,7 @@ FROM eclipse-temurin:17-jdk
 
 WORKDIR /app
 
-COPY gold-rate-backend .
+COPY gold-rate-backend/ /app/
 
 RUN chmod +x mvnw
 RUN ./mvnw clean package -DskipTests
