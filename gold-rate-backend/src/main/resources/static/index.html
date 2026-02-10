@@ -1,56 +1,99 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Gold Rate App</title>
+  <meta charset="UTF-8" />
+  <title>Gold Rate Today</title>
+
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #f5f5f5;
+      margin: 0;
+      height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
+      background: linear-gradient(135deg, #8fb7c7, #c7dce6);
+      font-family: "Segoe UI", Arial, sans-serif;
     }
+
     .card {
-      background: white;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      background: #4f6774;
+      color: #ffffff;
+      padding: 32px 42px;
+      border-radius: 14px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.25);
       text-align: center;
+      min-width: 380px;
     }
-    h1 {
-      margin-bottom: 20px;
-    }
-    .price {
+
+    .title {
       font-size: 20px;
-      margin: 10px 0;
+      margin-bottom: 14px;
+      opacity: 0.95;
+    }
+
+    .price {
+      font-size: 46px;
+      font-weight: bold;
+      color: #f4d35e;
+      margin: 10px 0 18px;
+    }
+
+    .meta {
+      font-size: 15px;
+      margin: 6px 0;
+      opacity: 0.9;
+    }
+
+    .updated {
+      margin-top: 14px;
+      font-size: 14px;
+      opacity: 0.8;
     }
   </style>
 </head>
 <body>
 
-<div class="card">
-  <h1>Gold Rate Today</h1>
-  <div id="usd" class="price">Loading...</div>
-  <div id="inr" class="price"></div>
-</div>
+  <div class="card">
+    <div class="title">24K Gold Price (₹ / gram)</div>
 
-<script>
-  fetch("/api/gold/price/details")
-    .then(response => response.json())
-    .then(data => {
-      document.getElementById("usd").innerText =
-        "USD per ounce: $" + data.xauUsd.toFixed(2);
+    <div id="inrPrice" class="price">Loading…</div>
 
-      document.getElementById("inr").innerText =
-        "INR per gram: ₹" + data.pricePerGramInr.toFixed(2);
-    })
-    .catch(err => {
-      document.getElementById("usd").innerText = "Failed to load USD price";
-      document.getElementById("inr").innerText = "Failed to load INR price";
-      console.error(err);
-    });
-</script>
+    <div id="xauUsd" class="meta"></div>
+    <div id="usdInr" class="meta"></div>
+
+    <div id="updated" class="updated"></div>
+  </div>
+
+  <script>
+    function loadGoldPrice() {
+      fetch("/api/gold/price/details")
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById("inrPrice").innerText =
+            "₹ " + data.pricePerGramInr.toFixed(2);
+
+          document.getElementById("xauUsd").innerText =
+            "XAU / USD: " + data.xauUsd.toFixed(2);
+
+          document.getElementById("usdInr").innerText =
+            "USD / INR: " + data.usdInr.toFixed(2);
+
+          const now = new Date();
+          document.getElementById("updated").innerText =
+            "Last updated: " + now.toLocaleTimeString();
+        })
+        .catch(() => {
+          document.getElementById("inrPrice").innerText =
+            "Failed to load data";
+        });
+    }
+
+    // Load immediately
+    loadGoldPrice();
+
+    // Auto refresh every 1 minute
+    setInterval(loadGoldPrice, 60 * 1000);
+  </script>
 
 </body>
 </html>
