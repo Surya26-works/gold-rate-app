@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Gold Rate App</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .card {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    h1 {
+      margin-bottom: 20px;
+    }
+    .price {
+      font-size: 20px;
+      margin: 10px 0;
+    }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <h1>Gold Rate Today</h1>
+  <div id="usd" class="price">Loading...</div>
+  <div id="inr" class="price"></div>
+</div>
+
+<script>
+  fetch("/api/gold/price/details")
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById("usd").innerText =
+        "USD per ounce: $" + data.goldPricePerOunceUSD;
+
+      document.getElementById("inr").innerText =
+        "INR per gram: ₹" + data.goldPricePerGramINR;
+    })
+    .catch(() => {
+      document.getElementById("usd").innerText = "Failed to load data";
+    });
+</script>
+
+</body>
+</html>
