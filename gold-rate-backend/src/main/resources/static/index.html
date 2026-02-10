@@ -2,98 +2,117 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+
+  <!-- ✅ Mobile zoom & responsive fix -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
   <title>Gold Rate Today</title>
 
+  <!-- ✅ PWA support -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#4f6774">
+
   <style>
-    body {
+    * {
+      box-sizing: border-box;
       margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    }
+
+    body {
       height: 100vh;
+      background: linear-gradient(135deg, #9cc4d4, #cfe2ea);
       display: flex;
-      justify-content: center;
       align-items: center;
-      background: linear-gradient(135deg, #8fb7c7, #c7dce6);
-      font-family: "Segoe UI", Arial, sans-serif;
+      justify-content: center;
+      padding: 16px;
     }
 
     .card {
-      background: #4f6774;
+      background: #5b6f7c;
       color: #ffffff;
-      padding: 32px 42px;
+      padding: 22px 24px;
       border-radius: 14px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+      width: 100%;
+      max-width: 360px;
       text-align: center;
-      min-width: 380px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
     }
 
     .title {
-      font-size: 20px;
-      margin-bottom: 14px;
-      opacity: 0.95;
+      font-size: 15px;
+      opacity: 0.9;
+      margin-bottom: 12px;
     }
 
     .price {
-      font-size: 46px;
-      font-weight: bold;
-      color: #f4d35e;
-      margin: 10px 0 18px;
+      font-size: 36px;
+      font-weight: 700;
+      color: #ffd369;
+      margin-bottom: 10px;
     }
 
-    .meta {
-      font-size: 15px;
-      margin: 6px 0;
+    .info {
+      font-size: 13px;
       opacity: 0.9;
+      margin-top: 4px;
     }
 
     .updated {
-      margin-top: 14px;
-      font-size: 14px;
-      opacity: 0.8;
+      font-size: 12px;
+      opacity: 0.75;
+      margin-top: 10px;
     }
   </style>
 </head>
-<body>
 
+<body>
   <div class="card">
     <div class="title">24K Gold Price (₹ / gram)</div>
 
-    <div id="inrPrice" class="price">Loading…</div>
+    <div class="price" id="inr">Loading...</div>
 
-    <div id="xauUsd" class="meta"></div>
-    <div id="usdInr" class="meta"></div>
+    <div class="info" id="xauusd">XAU / USD: --</div>
+    <div class="info" id="usdinr">USD / INR: --</div>
 
-    <div id="updated" class="updated"></div>
+    <div class="updated" id="updated">Last updated: --</div>
   </div>
 
   <script>
-    function loadGoldPrice() {
-      fetch("/api/gold/price/details")
-        .then(res => res.json())
-        .then(data => {
-          document.getElementById("inrPrice").innerText =
-            "₹ " + data.pricePerGramInr.toFixed(2);
+    async function loadGoldRate() {
+      try {
+        const res = await fetch("/api/gold/price/details");
+        const data = await res.json();
 
-          document.getElementById("xauUsd").innerText =
-            "XAU / USD: " + data.xauUsd.toFixed(2);
+        document.getElementById("inr").innerText =
+          "₹ " + data.pricePerGramInr.toFixed(2);
 
-          document.getElementById("usdInr").innerText =
-            "USD / INR: " + data.usdInr.toFixed(2);
+        document.getElementById("xauusd").innerText =
+          "XAU / USD: " + data.xauUsd.toFixed(2);
 
-          const now = new Date();
-          document.getElementById("updated").innerText =
-            "Last updated: " + now.toLocaleTimeString();
-        })
-        .catch(() => {
-          document.getElementById("inrPrice").innerText =
-            "Failed to load data";
-        });
+        document.getElementById("usdinr").innerText =
+          "USD / INR: " + data.usdInr.toFixed(2);
+
+        const now = new Date();
+        document.getElementById("updated").innerText =
+          "Last updated: " + now.toLocaleTimeString();
+
+      } catch (e) {
+        document.getElementById("inr").innerText = "Error loading data";
+      }
     }
 
-    // Load immediately
-    loadGoldPrice();
+    // initial load
+    loadGoldRate();
 
-    // Auto refresh every 1 minute
-    setInterval(loadGoldPrice, 60 * 1000);
+    // auto refresh every 1 minute
+    setInterval(loadGoldRate, 60000);
+
+    // ✅ PWA service worker
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/service-worker.js");
+    }
   </script>
-
 </body>
 </html>
