@@ -37,16 +37,18 @@
 
 <script>
   fetch("/api/gold/price/details")
-    .then(res => res.json())
+    .then(response => response.json())
     .then(data => {
       document.getElementById("usd").innerText =
-        "USD per ounce: $" + data.goldPricePerOunceUSD;
+        "USD per ounce: $" + data.xauUsd.toFixed(2);
 
       document.getElementById("inr").innerText =
-        "INR per gram: ₹" + data.goldPricePerGramINR;
+        "INR per gram: ₹" + data.pricePerGramInr.toFixed(2);
     })
-    .catch(() => {
-      document.getElementById("usd").innerText = "Failed to load data";
+    .catch(err => {
+      document.getElementById("usd").innerText = "Failed to load USD price";
+      document.getElementById("inr").innerText = "Failed to load INR price";
+      console.error(err);
     });
 </script>
 
