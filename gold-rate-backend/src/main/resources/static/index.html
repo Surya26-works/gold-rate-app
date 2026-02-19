@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Gold & Silver Price</title>
+    <title>Live Gold & Silver Price</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <style>
@@ -21,26 +21,26 @@
             color: white;
             padding: 30px;
             border-radius: 12px;
-            width: 350px;
+            width: 360px;
             text-align: center;
             box-shadow: 0 8px 20px rgba(0,0,0,0.2);
         }
 
-        .card h1 {
+        h1 {
             font-size: 20px;
             margin-bottom: 20px;
             color: #f1c40f;
         }
 
         .price {
-            font-size: 22px;
+            font-size: 20px;
             font-weight: bold;
-            margin: 10px 0;
+            margin: 12px 0;
         }
 
         .info {
             font-size: 14px;
-            margin-top: 8px;
+            margin-top: 6px;
             color: #ccc;
         }
 
@@ -72,10 +72,12 @@ async function loadPrices() {
         const response = await fetch('/api/gold/price/details');
 
         if (!response.ok) {
-            throw new Error("API error");
+            throw new Error("API response not OK");
         }
 
         const data = await response.json();
+
+        console.log("API Response:", data);
 
         // GOLD
         document.getElementById("goldPrice").innerText =
@@ -85,7 +87,7 @@ async function loadPrices() {
         document.getElementById("silverPrice").innerText =
             "Silver: ₹ " + data.silverPricePerGramInr.toFixed(2) + " / gram";
 
-        // Market values
+        // Market Data
         document.getElementById("xauUsd").innerText =
             "XAU / USD: " + data.xauUsd.toFixed(2);
 
@@ -99,19 +101,23 @@ async function loadPrices() {
             "Last updated: " + new Date().toLocaleTimeString();
 
     } catch (error) {
-        console.error(error);
+        console.error("ERROR:", error);
 
         document.getElementById("goldPrice").innerText = "Error loading data";
         document.getElementById("goldPrice").classList.add("error");
 
         document.getElementById("silverPrice").innerText = "";
+        document.getElementById("xauUsd").innerText = "";
+        document.getElementById("xagUsd").innerText = "";
+        document.getElementById("usdInr").innerText = "";
+        document.getElementById("lastUpdated").innerText = "";
     }
 }
 
-// Load initially
+// Initial Load
 loadPrices();
 
-// Auto refresh every 60 seconds
+// Refresh every 60 seconds
 setInterval(loadPrices, 60000);
 </script>
 
