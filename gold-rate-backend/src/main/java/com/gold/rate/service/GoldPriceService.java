@@ -4,56 +4,77 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import com.gold.rate.model.MetalPriceResponse;
+import java.util.Map;
 
 @Service
 public class GoldPriceService {
 
-    @Value("${metalprice.api.key}")
-    private String apiKey;
-
     @Value("${metalprice.api.url}")
     private String apiUrl;
 
-    private static final double GRAMS_PER_OUNCE = 31.1;
-
     private final RestTemplate restTemplate = new RestTemplate();
 
-    private MetalPriceResponse fetchPrices() {
-        String url = apiUrl
-                + "?api_key=" + apiKey
-                + "&base=USD"
-                + "&currencies=XAU,INR";
-
-        return restTemplate.getForObject(url, MetalPriceResponse.class);
+    private Map<String, Object> getApiResponse() {
+        return restTemplate.getForObject(apiUrl, Map.class);
     }
 
-    // 🔹 XAU/USD (price of 1 ounce gold in USD)
+    private Map<String, Double> getRates() {
+        Map<String, Object> response = getApiResponse();
+        return (Map<String, Double>) response.get("rates");
+    }
+
+    // ================= GOLD =================
+
     public double getGoldPricePerOunceUSD() {
-        MetalPriceResponse response = fetchPrices();
+        Map<String, Double> rates = getRates();
 
-        // API gives ounces per USD → invert it
-        double ouncesPerUsd = response.getRates().get("XAU");
-        return 1 / ouncesPerUsd;
+        // API returns: 1 USD = X XAU
+        // We need: 1 XAU = ? USD → so invert
+        return 1 / rates.get("XAU");
     }
 
-    // 🔹 USD → INR
-    public double getUsdToInr() {
-        MetalPriceResponse response = fetchPrices();
-        return response.getRates().get("INR");
-    }
-
-    // 🔹 FINAL OWNER FORMULA
-    // a = XAU/USD * USD/INR
-    // b = a + 6%
-    // c = b + 3%
-    // d = c / 31.1
     public double getGoldPricePerGramINR() {
+        double xauUsd = getGoldPricePerOunceUSD();
+        double usdInr = getUsdToInr();
 
-        double a = getGoldPricePerOunceUSD() * getUsdToInr();
-        double b = a * 1.06;
-        double c = b * 1.03;
+        // USD → INR (per ounce)
+        double inrPerOunce = xauUsd * usdInr;
 
-        return c / GRAMS_PER_OUNCE;
+        // Add 6% customs
+        double afterCustoms = inrPerOunce * 1.06;
+
+        // Add 3% GST
+        double afterGst = afterCustoms * 1.03;
+
+        // Convert ounce → gram
+        return afterGst / 31.103;
+    }
+
+    // ================= SILVER =================
+
+    public double getSilverPricePerOunceUSD() {
+        Map<String, Double> rates = getRates();
+
+        // Invert
+        return 1 / rates.get("XAG");
+    }
+
+    public double getSilverPricePerGramINR() {
+        double xagUsd = getSilverPricePerOunceUSD();
+        double usdInr = getUsdToInr();
+
+        double inrPerOunce = xagUsd * usdInr;
+
+        double afterCustoms = inrPerOunce * 1.06;
+        double afterGst = afterCustoms * 1.03;
+
+        return afterGst / 31.103;
+    }
+
+    // ================= USD INR =================
+
+    public double getUsdToInr() {
+        Map<String, Double> rates = getRates();
+        return rates.get("INR");
     }
 }

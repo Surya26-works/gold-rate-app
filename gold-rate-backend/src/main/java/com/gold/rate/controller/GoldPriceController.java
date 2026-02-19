@@ -2,11 +2,12 @@ package com.gold.rate.controller;
 
 import com.gold.rate.service.GoldPriceService;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@CrossOrigin(origins = "*")   // ✅ THIS IS THE FIX
+@CrossOrigin(origins = "*")
 @RequestMapping("/api/gold/price")
 public class GoldPriceController {
 
@@ -17,17 +18,26 @@ public class GoldPriceController {
     }
 
     @GetMapping("/details")
-    public Map<String, Double> getGoldPriceDetails() {
+    public Map<String, Double> getPriceDetails() {
 
         Map<String, Double> response = new HashMap<>();
 
-        double xauUsd = goldPriceService.getGoldPricePerOunceUSD();
-        double usdInr = goldPriceService.getUsdToInr();
-        double pricePerGramInr = goldPriceService.getGoldPricePerGramINR();
+        // GOLD
+        double goldPerGram = goldPriceService.getGoldPricePerGramINR();
+        double goldXauUsd = goldPriceService.getGoldPricePerOunceUSD();
 
-        response.put("xauUsd", xauUsd);
+        // SILVER
+        double silverPerGram = goldPriceService.getSilverPricePerGramINR();
+        double silverXagUsd = goldPriceService.getSilverPricePerOunceUSD();
+
+        // USD INR
+        double usdInr = goldPriceService.getUsdToInr();
+
+        response.put("goldPricePerGramInr", goldPerGram);
+        response.put("silverPricePerGramInr", silverPerGram);
+        response.put("xauUsd", goldXauUsd);
+        response.put("xagUsd", silverXagUsd);
         response.put("usdInr", usdInr);
-        response.put("pricePerGramInr", pricePerGramInr);
 
         return response;
     }
