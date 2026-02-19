@@ -1,130 +1,117 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gold & Silver Rate</title>
+    <meta charset="UTF-8">
+    <title>Gold & Silver Price</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<style>
-    body {
-        margin: 0;
-        font-family: Arial, sans-serif;
-        background: linear-gradient(to bottom right, #dfe9f3, #ffffff);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-    }
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
 
-    .container {
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-        width: 90%;
-        max-width: 400px;
-    }
+        .card {
+            background: #2c2c2c;
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            width: 350px;
+            text-align: center;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
 
-    .card {
-        background: #4a5568;
-        color: white;
-        padding: 25px;
-        border-radius: 20px;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-        text-align: center;
-    }
+        .card h1 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #f1c40f;
+        }
 
-    .title {
-        font-size: 18px;
-        opacity: 0.8;
-        margin-bottom: 10px;
-    }
+        .price {
+            font-size: 22px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
 
-    .price {
-        font-size: 36px;
-        font-weight: bold;
-        color: #f6c343;
-        margin-bottom: 10px;
-    }
+        .info {
+            font-size: 14px;
+            margin-top: 8px;
+            color: #ccc;
+        }
 
-    .sub {
-        font-size: 14px;
-        opacity: 0.8;
-        margin-top: 4px;
-    }
-
-    .updated {
-        margin-top: 10px;
-        font-size: 12px;
-        opacity: 0.7;
-    }
-</style>
+        .error {
+            color: #ff6b6b;
+            font-weight: bold;
+        }
+    </style>
 </head>
 
 <body>
 
-<div class="container">
+<div class="card">
+    <h1>Live Gold & Silver Price</h1>
 
-    <!-- GOLD CARD -->
-    <div class="card">
-        <div class="title">24K Gold Price (₹ / gram)</div>
-        <div id="goldPrice" class="price">Loading...</div>
-        <div id="xauUsd" class="sub"></div>
-        <div id="usdInrGold" class="sub"></div>
-        <div id="goldUpdated" class="updated"></div>
-    </div>
+    <div id="goldPrice" class="price">Loading gold...</div>
+    <div id="silverPrice" class="price">Loading silver...</div>
 
-    <!-- SILVER CARD -->
-    <div class="card">
-        <div class="title">Silver Price (₹ / gram)</div>
-        <div id="silverPrice" class="price">Loading...</div>
-        <div id="xagUsd" class="sub"></div>
-        <div id="usdInrSilver" class="sub"></div>
-        <div id="silverUpdated" class="updated"></div>
-    </div>
+    <div id="xauUsd" class="info"></div>
+    <div id="xagUsd" class="info"></div>
+    <div id="usdInr" class="info"></div>
 
+    <div id="lastUpdated" class="info"></div>
 </div>
 
 <script>
 async function loadPrices() {
     try {
-        const response = await fetch("/api/gold/price/details");
+        const response = await fetch('/api/gold/price/details');
+
+        if (!response.ok) {
+            throw new Error("API error");
+        }
+
         const data = await response.json();
 
         // GOLD
         document.getElementById("goldPrice").innerText =
-            "₹ " + data.goldPricePerGramInr.toFixed(2);
-
-        document.getElementById("xauUsd").innerText =
-            "XAU / USD: " + data.xauUsd.toFixed(2);
-
-        document.getElementById("usdInrGold").innerText =
-            "USD / INR: " + data.usdInr.toFixed(2);
-
-        document.getElementById("goldUpdated").innerText =
-            "Last updated: " + new Date().toLocaleTimeString();
+            "24K Gold: ₹ " + data.goldPricePerGramInr.toFixed(2) + " / gram";
 
         // SILVER
         document.getElementById("silverPrice").innerText =
-            "₹ " + data.silverPricePerGramInr.toFixed(2);
+            "Silver: ₹ " + data.silverPricePerGramInr.toFixed(2) + " / gram";
+
+        // Market values
+        document.getElementById("xauUsd").innerText =
+            "XAU / USD: " + data.xauUsd.toFixed(2);
 
         document.getElementById("xagUsd").innerText =
             "XAG / USD: " + data.xagUsd.toFixed(2);
 
-        document.getElementById("usdInrSilver").innerText =
+        document.getElementById("usdInr").innerText =
             "USD / INR: " + data.usdInr.toFixed(2);
 
-        document.getElementById("silverUpdated").innerText =
+        document.getElementById("lastUpdated").innerText =
             "Last updated: " + new Date().toLocaleTimeString();
 
     } catch (error) {
-        console.error("Error loading prices:", error);
+        console.error(error);
+
+        document.getElementById("goldPrice").innerText = "Error loading data";
+        document.getElementById("goldPrice").classList.add("error");
+
+        document.getElementById("silverPrice").innerText = "";
     }
 }
 
-// Load immediately
+// Load initially
 loadPrices();
 
-// Refresh every 60 seconds
+// Auto refresh every 60 seconds
 setInterval(loadPrices, 60000);
 </script>
 
